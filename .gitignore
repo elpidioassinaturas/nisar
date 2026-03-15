@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# Credentials — NUNCA versionar
+nisar_config.yaml
+.netrc
+*.env
+secrets.yaml
+
+# Downloads (dados grandes)
+data/
+downloads/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

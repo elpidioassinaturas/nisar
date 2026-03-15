@@ -1,0 +1,41 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# nisar_config.yaml.example
+# Copie este arquivo para nisar_config.yaml e preencha suas credenciais.
+# O arquivo nisar_config.yaml está no .gitignore e NUNCA será versionado.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Credenciais NASA Earthdata Login
+# Crie conta gratuita em: https://urs.earthdata.nasa.gov
+earthdata:
+  username: "SEU_USUARIO_EARTHDATA"
+  password: "SUA_SENHA_EARTHDATA"
+
+# Parâmetros de busca
+search:
+  # Área de interesse em formato WKT (Well-Known Text)
+  # Padrão abaixo: polígono aproximado do Brasil
+  aoi_wkt: >
+    POLYGON((-73.9 5.3, -34.8 5.3, -34.8 -33.7, -73.9 -33.7, -73.9 5.3))
+
+  # Tipo de produto NISAR
+  # Opções comuns: GCOV, RSLC, GUNW, GSLC, GOFF
+  # GCOV  = Geocoded Covariance (L2 - recomendado para início)
+  # RSLC  = Range-Doppler Single Look Complex (L1)
+  # GSLC  = Geocoded Single Look Complex (L2)
+  # GUNW  = Geocoded Unwrapped Interferogram (L2)
+  product_type: "GCOV"
+
+  # Datas de início e fim (formato ISO 8601: AAAA-MM-DD)
+  start_date: "2026-02-01"
+  end_date:   "2026-03-14"
+
+  # Limite máximo de resultados (null = sem limite)
+  max_results: 50
+
+# Configurações de download
+download:
+  # Diretório onde os arquivos serão salvos
+  directory: "downloads/nisar"
+
+  # Número de downloads paralelos (recomendado: 2-4)
+  processes: 2
