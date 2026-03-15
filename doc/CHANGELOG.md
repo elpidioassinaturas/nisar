@@ -5,6 +5,20 @@ Formato: `[versão] AAAA-MM-DD — Descrição`
 
 ---
 
+## [0.0.11] 2026-03-15
+
+### Adicionado
+- **`geodata.py`** — geocodificação via Nominatim OSM e leitura de shapefile/GeoPackage com geopandas
+- **Rotas Flask:** `GET /api/countries`, `POST /api/geocode`, `POST /api/upload-aoi`
+- **Aba Configuração — 4 novos cards:**
+  - 🗺️ **Selecionar no mapa** — Leaflet.js + Esri Satellite + Leaflet.draw (polígono/retângulo → WKT automático)
+  - 🌎 **Busca por localidade** — dropdown dos 13 países SA + estado/município → Nominatim → desenha no mapa
+  - 📂 **Upload shapefile/.gpkg** — reprojecta para WGS84 → convex hull → WKT
+  - ⚡ **Atalhos de data** — botões rápidos + seletor mês/ano
+- `geopandas>=0.14` adicionado em `requirements.txt`
+
+---
+
 ## [0.0.10] 2026-03-15
 
 ### Modificado

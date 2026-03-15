@@ -24,6 +24,13 @@ except ImportError:
     extract_layers = None
     AVAILABLE_LAYERS = []
 
+try:
+    from geodata import south_america_countries, geocode_area, load_aoi_file
+except ImportError:
+    south_america_countries = lambda: []
+    geocode_area = None
+    load_aoi_file = None
+
 app = Flask(__name__)
 
 CONFIG_PATH = Path("nisar_config.yaml")
@@ -335,6 +342,45 @@ def api_extract_stream():
 @app.route("/api/extract-status")
 def api_extract_status():
     return jsonify(EXTRACT_STATUS)
+
+
+# ── Geodata / AOI ───────────────────────────────────────────────────────────────────
+
+@app.route("/api/countries")
+def api_countries():
+    return jsonify({"countries": south_america_countries()})
+
+
+@app.route("/api/geocode", methods=["POST"])
+def api_geocode():
+    if not geocode_area:
+        return jsonify({"error": "geodata.py não carregado"}), 500
+    data    = request.json or {}
+    country = data.get("country", "")
+    state   = data.get("state", "")
+    muni    = data.get("municipality", "")
+    if not country:
+        return jsonify({"error": "País obrigatório"}), 400
+    result = geocode_area(country, state, muni)
+    if "error" in result:
+        return jsonify(result), 404
+    return jsonify(result)
+
+
+@app.route("/api/upload-aoi", methods=["POST"])
+def api_upload_aoi():
+    if not load_aoi_file:
+        return jsonify({"error": "geodata.py não carregado"}), 500
+    if "file" not in request.files:
+        return jsonify({"error": "Nenhum arquivo enviado"}), 400
+    f        = request.files["file"]
+    filename = f.filename or ""
+    if not filename.lower().endswith((".zip", ".gpkg")):
+        return jsonify({"error": "Use .zip (shapefile) ou .gpkg"}), 400
+    result = load_aoi_file(f.read(), filename)
+    if "error" in result:
+        return jsonify(result), 400
+    return jsonify(result)
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
