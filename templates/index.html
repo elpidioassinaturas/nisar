@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NISAR Downloader</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:      #0d1117;
+      --surface: #161b22;
+      --card:    #1c2230;
+      --border:  #30363d;
+      --accent:  #2563eb;
+      --accent2: #1d4ed8;
+      --green:   #22c55e;
+      --red:     #ef4444;
+      --yellow:  #f59e0b;
+      --text:    #e6edf3;
+      --muted:   #7d8590;
+      --radius:  12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #0f2044 0%, #1a3a6b 50%, #0f2044 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    header .logo {
+      width: 42px; height: 42px;
+      background: linear-gradient(135deg, var(--accent), #60a5fa);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+    header h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: -.5px; }
+    header p  { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+    .badge {
+      margin-left: auto;
+      background: rgba(37,99,235,.2);
+      border: 1px solid rgba(37,99,235,.4);
+      color: #93c5fd;
+      font-size: .72rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    /* ── Layout ── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 28px 20px; }
+
+    /* ── Tabs ── */
+    .tabs { display: flex; gap: 4px; margin-bottom: 24px; }
+    .tab {
+      padding: 9px 20px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: none;
+      color: var(--muted);
+      font-size: .88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .tab:hover { color: var(--text); background: var(--card); }
+    .tab.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: .95rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-bottom: 20px;
+    }
+
+    /* ── Form ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: .82rem; color: var(--muted); font-weight: 500; }
+    .field input, .field select, .field textarea {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: .9rem;
+      padding: 9px 13px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: var(--accent);
+    }
+    .field textarea { resize: vertical; min-height: 72px; font-size: .78rem; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 22px;
+      border-radius: 8px;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-size: .88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
+    .btn-success { background: #15803d; color: #fff; }
+    .btn-success:hover { background: #166534; transform: translateY(-1px); }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-ghost:hover { background: var(--card); }
+    .btn:disabled { opacity: .45; cursor: not-allowed; transform: none !important; }
+    .actions { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+
+    /* ── Results table ── */
+    .results-info {
+      font-size: .85rem; color: var(--muted);
+      margin-bottom: 14px;
+    }
+    .results-info strong { color: var(--green); }
+    .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: .83rem; }
+    thead { background: var(--surface); }
+    th { padding: 11px 14px; text-align: left; color: var(--muted); font-weight: 500; white-space: nowrap; }
+    td { padding: 10px 14px; border-top: 1px solid var(--border); }
+    tr:hover td { background: rgba(255,255,255,.03); }
+    .check-col { width: 36px; text-align: center; }
+    input[type=checkbox] { width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; }
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: .73rem;
+      font-weight: 600;
+      background: rgba(37,99,235,.2);
+      color: #93c5fd;
+    }
+    .name-cell {
+      font-family: monospace; font-size: .75rem; color: #94a3b8;
+      max-width: 380px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .empty-state {
+      text-align: center; padding: 60px 20px; color: var(--muted);
+    }
+    .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+    /* ── Log ── */
+    .log-box {
+      background: #0a0e14;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      font-size: .78rem;
+      height: 220px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+    .log-box .log-line { color: #94a3b8; }
+    .log-box .log-ok   { color: var(--green); }
+    .log-box .log-err  { color: var(--red); }
+    .log-box .log-info { color: #60a5fa; }
+
+    /* ── Progress ── */
+    .progress-wrap { margin: 14px 0; }
+    .progress-label { font-size: .82rem; color: var(--muted); margin-bottom: 6px; }
+    .progress-bar-bg {
+      background: var(--surface);
+      border-radius: 99px;
+      height: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .progress-bar {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+      transition: width .4s;
+      width: 0%;
+    }
+
+    /* ── Files tab ── */
+    .file-list { display: flex; flex-direction: column; gap: 10px; }
+    .file-item {
+      display: flex; align-items: center; gap: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+    }
+    .file-icon { font-size: 22px; }
+    .file-name { font-size: .85rem; font-weight: 500; }
+    .file-meta { font-size: .75rem; color: var(--muted); margin-top: 2px; }
+    .file-size {
+      margin-left: auto;
+      font-size: .8rem;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 20px;
+      font-size: .875rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,.4);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all .3s;
+      z-index: 999;
+      max-width: 360px;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+    #toast.ok   { border-color: var(--green); }
+    #toast.err  { border-color: var(--red); }
+
+    @media (max-width: 640px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      header { padding: 14px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🛰️</div>
+  <div>
+    <h1>NISAR Downloader</h1>
+    <p>NASA-ISRO Synthetic Aperture Radar · ASF DAAC</p>
+  </div>
+  <span class="badge" id="version-badge">v0.0.3</span>
+</header>
+
+<div class="container">
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('busca')">🔍 Busca e Download</button>
+    <button class="tab" onclick="showTab('config')">⚙️ Configuração</button>
+    <button class="tab" onclick="showTab('arquivos', loadFiles)">📁 Arquivos Baixados</button>
+  </div>
+
+  <!-- ══ ABA: BUSCA E DOWNLOAD ══ -->
+  <div id="panel-busca" class="panel active">
+
+    <div class="card">
+      <h2>Parâmetros ativos</h2>
+      <div id="param-summary" style="font-size:.85rem;color:var(--muted);line-height:1.9">
+        Carregando configuração...
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="btn-search" onclick="doSearch()">
+          🔍 Buscar produtos
+        </button>
+        <button class="btn btn-ghost" onclick="showTab('config')">
+          ⚙️ Alterar config
+        </button>
+      </div>
+    </div>
+
+    <div class="card" id="results-card" style="display:none">
+      <h2>Resultados</h2>
+      <div class="results-info" id="results-info"></div>
+      <div style="margin-bottom:12px;display:flex;gap:10px;align-items:center">
+        <label style="font-size:.82rem;color:var(--muted);cursor:pointer">
+          <input type="checkbox" id="check-all" onchange="toggleAll(this)"/>
+          &nbsp;Selecionar todos
+        </label>
+        <button class="btn btn-success" id="btn-download" onclick="doDownload()" disabled>
+          ⬇️ Baixar selecionados
+        </button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="check-col"><input type="checkbox" id="check-all2" onchange="toggleAll(this)"/></th>
+              <th>#</th>
+              <th>Nome do produto</th>
+              <th>Tipo</th>
+              <th>Data de aquisição</th>
+              <th>Tamanho</th>
+            </tr>
+          </thead>
+          <tbody id="results-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" id="progress-card" style="display:none">
+      <h2>Progresso do download</h2>
+      <div class="progress-wrap">
+        <div class="progress-label" id="progress-label">Aguardando...</div>
+        <div class="progress-bar-bg"><div class="progress-bar" id="progress-bar"></div></div>
+      </div>
+      <div class="log-box" id="log-box"></div>
+    </div>
+
+  </div>
+
+  <!-- ══ ABA: CONFIG ══ -->
+  <div id="panel-config" class="panel">
+    <form onsubmit="saveConfig(event)">
+
+      <div class="card">
+        <h2>🔐 Credenciais NASA Earthdata</h2>
+        <div class="grid-2">
+          <div class="field">
+            <label>Usuário Earthdata</label>
+            <input id="username" type="text" placeholder="seu_usuario"/>
+          </div>
+          <div class="field">
+            <label>Senha</label>
+            <input id="password" type="password" placeholder="••••••••"/>
+          </div>
+        </div>
+        <p style="font-size:.75rem;color:var(--muted);margin-top:12px">
+          Sem conta? Crie gratuitamente em
+          <a href="https://urs.earthdata.nasa.gov/users/new" target="_blank" style="color:#60a5fa">
+            urs.earthdata.nasa.gov
+          </a>
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>🔍 Parâmetros de busca</h2>
+        <div class="grid-2">
+          <div class="field">
+            <label>Tipo de produto</label>
+            <select id="product_type">
+              <option value="GCOV">GCOV — Geocoded Covariance (L2)</option>
+              <option value="RSLC">RSLC — Single Look Complex (L1)</option>
+              <option value="GSLC">GSLC — Geocoded SLC (L2)</option>
+              <option value="GUNW">GUNW — Interferograma (L2)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Máximo de resultados</label>
+            <input id="max_results" type="number" min="1" max="500" value="50"/>
+          </div>
+          <div class="field">
+            <label>Data início</label>
+            <input id="start_date" type="date"/>
+          </div>
+          <div class="field">
+            <label>Data fim</label>
+            <input id="end_date" type="date"/>
+          </div>
+        </div>
+        <div class="field" style="margin-top:14px">
+          <label>Área de interesse (WKT) — Padrão: Brasil</label>
+          <textarea id="aoi_wkt" rows="3"></textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>📁 Download</h2>
+        <div class="grid-2">
+          <div class="field">
+            <label>Pasta de destino</label>
+            <input id="directory" type="text" placeholder="downloads/nisar"/>
+          </div>
+          <div class="field">
+            <label>Downloads paralelos</label>
+            <input id="processes" type="number" min="1" max="8" value="2"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn btn-primary">💾 Salvar configuração</button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- ══ ABA: ARQUIVOS ══ -->
+  <div id="panel-arquivos" class="panel">
+    <div class="card">
+      <h2>Arquivos baixados</h2>
+      <div id="files-list"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────
+let searchResults = [];
+
+// ── Tabs ──────────────────────────────────────────────────────
+function showTab(name, cb) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', ['busca','config','arquivos'][i] === name);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  if (cb) cb();
+}
+
+// ── Toast ─────────────────────────────────────────────────────
+function toast(msg, type='ok') {
+  const el = document.getElementById('toast');
+  el.textContent = (type === 'ok' ? '✅ ' : '❌ ') + msg;
+  el.className = 'show ' + type;
+  setTimeout(() => el.className = '', 3500);
+}
+
+// ── Load config ───────────────────────────────────────────────
+async function loadConfig() {
+  const r = await fetch('/api/config').then(r => r.json());
+  document.getElementById('username').value     = r.username || '';
+  document.getElementById('password').value     = r.password || '';
+  document.getElementById('product_type').value = r.product_type || 'GCOV';
+  document.getElementById('start_date').value   = r.start_date || '';
+  document.getElementById('end_date').value     = r.end_date || '';
+  document.getElementById('max_results').value  = r.max_results || 50;
+  document.getElementById('aoi_wkt').value      = r.aoi_wkt || '';
+  document.getElementById('directory').value    = r.directory || 'downloads/nisar';
+  document.getElementById('processes').value    = r.processes || 2;
+
+  document.getElementById('param-summary').innerHTML = `
+    <b>Produto:</b> ${r.product_type} &nbsp;|&nbsp;
+    <b>Período:</b> ${r.start_date} → ${r.end_date} &nbsp;|&nbsp;
+    <b>Máx resultados:</b> ${r.max_results}<br/>
+    <b>Usuário:</b> ${r.username || '<span style="color:var(--red)">não configurado</span>'} &nbsp;|&nbsp;
+    <b>Destino:</b> <code style="color:#60a5fa">${r.directory}</code>
+  `;
+}
+
+async function saveConfig(e) {
+  e.preventDefault();
+  const body = {
+    username:     document.getElementById('username').value,
+    password:     document.getElementById('password').value,
+    product_type: document.getElementById('product_type').value,
+    start_date:   document.getElementById('start_date').value,
+    end_date:     document.getElementById('end_date').value,
+    max_results:  document.getElementById('max_results').value,
+    aoi_wkt:      document.getElementById('aoi_wkt').value,
+    directory:    document.getElementById('directory').value,
+    processes:    document.getElementById('processes').value,
+  };
+  const r = await fetch('/api/config', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  if (r.ok) { toast('Configuração salva!'); await loadConfig(); }
+  else toast('Erro ao salvar', 'err');
+}
+
+// ── Search ────────────────────────────────────────────────────
+async function doSearch() {
+  const btn = document.getElementById('btn-search');
+  btn.disabled = true;
+  btn.textContent = '⏳ Buscando...';
+  document.getElementById('results-card').style.display = 'none';
+
+  try {
+    const r = await fetch('/api/search', { method: 'POST' });
+    const data = await r.json();
+    if (data.error) { toast(data.error, 'err'); return; }
+
+    searchResults = data.results;
+    renderResults(data.results);
+    document.getElementById('results-card').style.display = 'block';
+    toast(`${data.total} produto(s) encontrado(s)!`);
+  } catch(e) {
+    toast('Erro na busca: ' + e.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔍 Buscar produtos';
+  }
+}
+
+function renderResults(items) {
+  const info = document.getElementById('results-info');
+  info.innerHTML = `<strong>${items.length}</strong> produto(s) encontrado(s)`;
+
+  const tbody = document.getElementById('results-body');
+  if (items.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state">
+      <div class="icon">🔭</div>
+      <div>Nenhum produto encontrado.<br/>Verifique os filtros na aba Configuração.</div>
+    </div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = items.map((item, i) => `
+    <tr>
+      <td class="check-col"><input type="checkbox" class="prod-check" value="${i}" onchange="countChecked()"/></td>
+      <td style="color:var(--muted);font-size:.78rem">${i+1}</td>
+      <td class="name-cell" title="${item.name}">${item.name}</td>
+      <td><span class="tag">${item.product}</span></td>
+      <td style="font-size:.8rem;color:var(--muted)">${item.date ? item.date.replace('T',' ').slice(0,16) : '—'}</td>
+      <td style="font-size:.8rem;color:var(--accent)">${item.size_mb > 0 ? item.size_mb + ' MB' : '—'}</td>
+    </tr>
+  `).join('');
+}
+
+function toggleAll(cb) {
+  document.querySelectorAll('.prod-check').forEach(c => c.checked = cb.checked);
+  document.getElementById('check-all').checked  = cb.checked;
+  document.getElementById('check-all2').checked = cb.checked;
+  countChecked();
+}
+
+function countChecked() {
+  const n = document.querySelectorAll('.prod-check:checked').length;
+  const btn = document.getElementById('btn-download');
+  btn.disabled = n === 0;
+  btn.textContent = n > 0 ? `⬇️ Baixar selecionados (${n})` : '⬇️ Baixar selecionados';
+}
+
+// ── Download ──────────────────────────────────────────────────
+async function doDownload() {
+  const checked = [...document.querySelectorAll('.prod-check:checked')].map(c => searchResults[+c.value]);
+  if (!checked.length) return;
+
+  const btn = document.getElementById('btn-download');
+  btn.disabled = true;
+
+  const r = await fetch('/api/download', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ results: checked })
+  });
+  const data = await r.json();
+  if (data.error) { toast(data.error, 'err'); btn.disabled = false; return; }
+
+  document.getElementById('progress-card').style.display = 'block';
+  document.getElementById('progress-card').scrollIntoView({ behavior: 'smooth' });
+  startLogStream(data.total);
+}
+
+function startLogStream(total) {
+  const logBox   = document.getElementById('log-box');
+  const bar      = document.getElementById('progress-bar');
+  const label    = document.getElementById('progress-label');
+  logBox.innerHTML = '';
+  let done = 0;
+
+  const es = new EventSource('/api/stream');
+  es.onmessage = e => {
+    const { msg } = JSON.parse(e.data);
+    if (msg === '__PING__') return;
+    if (msg === '__DONE__') {
+      es.close();
+      label.textContent = `✅ Concluído! ${done}/${total} arquivo(s)`;
+      bar.style.width = '100%';
+      toast('Download concluído!');
+      document.getElementById('btn-download').disabled = false;
+      return;
+    }
+    if (msg.includes('✓')) done++;
+    const cls = msg.includes('✓') ? 'log-ok' : msg.includes('✗') || msg.includes('Erro') ? 'log-err' : msg.includes('[') ? 'log-info' : 'log-line';
+    logBox.innerHTML += `<div class="${cls}">${escHtml(msg)}</div>`;
+    logBox.scrollTop = logBox.scrollHeight;
+    const pct = total ? Math.round(done / total * 100) : 0;
+    bar.style.width = pct + '%';
+    label.textContent = `Baixando... ${done}/${total} (${pct}%)`;
+  };
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Files ─────────────────────────────────────────────────────
+async function loadFiles() {
+  const r = await fetch('/api/files').then(r => r.json());
+  const container = document.getElementById('files-list');
+  if (!r.files.length) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="icon">📂</div>
+      <div>Nenhum arquivo baixado ainda.</div>
+    </div>`;
+    return;
+  }
+  container.innerHTML = `<div class="file-list">` +
+    r.files.map(f => `
+      <div class="file-item">
+        <span class="file-icon">📄</span>
+        <div>
+          <div class="file-name">${f.name}</div>
+          <div class="file-meta">${f.date}</div>
+        </div>
+        <span class="file-size">${f.size_mb} MB</span>
+      </div>`).join('') +
+  `</div>`;
+}
+
+// ── Init ──────────────────────────────────────────────────────
+loadConfig();
+</script>
+</body>
+</html>

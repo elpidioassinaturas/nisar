@@ -5,6 +5,18 @@ Formato: `[versão] AAAA-MM-DD — Descrição`
 
 ---
 
+## [0.0.3] 2026-03-14
+
+### Adicionado
+- Interface web Flask (`app.py` + `templates/index.html`)
+- Aba **Busca e Download**: tabela de produtos, seleção por checkbox, log em tempo real, barra de progresso
+- Aba **Configuração**: formulário completo para credenciais, datas, AOI, produto e pasta de destino
+- Aba **Arquivos Baixados**: lista arquivos `.h5` já salvos localmente
+- `INICIAR.bat` — duplo clique para abrir a interface no navegador
+- `requirements.txt` com dependências do projeto
+
+---
+
 ## [0.0.2] 2026-03-14
 
 ### Corrigido
