@@ -660,6 +660,15 @@ function showTab(name, cb) {
   });
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel-' + name).classList.add('active');
+
+  // Corrige o Leaflet quando o mapa estava em container oculto
+  if (name === 'config' && _map) {
+    setTimeout(() => {
+      _map.invalidateSize();
+      _map.setView([-12, -55], 4);   // re-centra na América do Sul
+    }, 100);
+  }
+
   if (cb) cb();
 }
 
