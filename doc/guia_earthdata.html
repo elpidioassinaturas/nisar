@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Guia: Como criar conta Earthdata e baixar dados NISAR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --blue:   #1d4ed8;
+      --blue-l: #eff6ff;
+      --green:  #166534;
+      --green-l:#dcfce7;
+      --amber:  #92400e;
+      --amber-l:#fef3c7;
+      --gray:   #374151;
+      --muted:  #6b7280;
+      --border: #e5e7eb;
+      --bg:     #f9fafb;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--gray);
+      line-height: 1.75;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, #0f172a, #1e3a8a);
+      color: #fff;
+      padding: 48px 24px 56px;
+      text-align: center;
+    }
+    .hero .icon { font-size: 56px; margin-bottom: 16px; }
+    .hero h1 { font-size: 1.9rem; font-weight: 700; margin-bottom: 8px; }
+    .hero p { font-size: 1rem; color: #bfdbfe; max-width: 560px; margin: 0 auto; }
+
+    /* ── Container ── */
+    .container { max-width: 780px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    /* ── Intro box ── */
+    .intro {
+      background: var(--blue-l);
+      border-left: 4px solid var(--blue);
+      border-radius: 8px;
+      padding: 18px 20px;
+      margin-bottom: 36px;
+      font-size: .95rem;
+      color: #1e40af;
+    }
+    .intro strong { display: block; margin-bottom: 4px; font-size: 1rem; }
+
+    /* ── Section ── */
+    .section {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px 28px 20px;
+      margin-bottom: 28px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .step-badge {
+      min-width: 42px; height: 42px;
+      border-radius: 50%;
+      background: var(--blue);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .section-header h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #111827;
+    }
+    .section-header p {
+      font-size: .85rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* ── Steps list ── */
+    ol { padding-left: 0; list-style: none; }
+    ol li {
+      display: flex;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: .95rem;
+    }
+    ol li:last-child { border-bottom: none; padding-bottom: 0; }
+    .li-num {
+      min-width: 28px; height: 28px;
+      border-radius: 50%;
+      background: #e0e7ff;
+      color: #3730a3;
+      font-weight: 700;
+      font-size: .82rem;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .li-body strong { display: block; font-weight: 600; color: #111827; margin-bottom: 2px; }
+    .li-body span { color: var(--muted); font-size: .88rem; }
+
+    /* ── CTA button ── */
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--blue);
+      color: #fff !important;
+      font-weight: 600;
+      font-size: .95rem;
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      margin-top: 20px;
+      transition: background .2s, transform .15s;
+      box-shadow: 0 2px 8px rgba(29,78,216,.3);
+    }
+    .cta:hover { background: #1e40af; transform: translateY(-2px); }
+    .cta-green { background: #15803d; box-shadow: 0 2px 8px rgba(21,128,61,.3); }
+    .cta-green:hover { background: #166534; }
+
+    /* ── Alert boxes ── */
+    .alert {
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: .88rem;
+      margin-top: 18px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .alert-amber { background: var(--amber-l); color: var(--amber); border-left: 4px solid #f59e0b; }
+    .alert-green { background: var(--green-l); color: var(--green); border-left: 4px solid #22c55e; }
+    .alert-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 1px; }
+
+    /* ── Divider ── */
+    .divider {
+      text-align: center;
+      color: var(--muted);
+      font-size: .8rem;
+      margin: 10px 0 28px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      font-size: .8rem;
+      color: var(--muted);
+      padding: 24px;
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--blue); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="icon">🛰️</div>
+  <h1>Como acessar dados do satélite NISAR</h1>
+  <p>Guia completo para criar sua conta gratuita na NASA e autorizar o download de imagens de radar</p>
+</div>
+
+<div class="container">
+
+  <!-- INTRO -->
+  <div class="intro">
+    <strong>📋 O que você vai precisar fazer</strong>
+    Para baixar dados do NISAR você precisa de uma conta gratuita na NASA (Earthdata) e autorizar o sistema de download da ASF. São apenas dois passos, feitos uma única vez.
+  </div>
+
+  <!-- PASSO 1 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-badge">1</div>
+      <div>
+        <h2>Criar conta gratuita na NASA Earthdata</h2>
+        <p>Leva menos de 3 minutos · Gratuito para sempre</p>
+      </div>
+    </div>
+
+    <ol>
+      <li>
+        <div class="li-num">1</div>
+        <div class="li-body">
+          <strong>Acesse a página de cadastro</strong>
+          <span>Clique no botão abaixo para abrir o site da NASA.</span>
+        </div>
+      </li>
+      <li>
+        <div class="li-num">2</div>
+        <div class="li-body">
+          <strong>Clique em "Register" (Registrar)</strong>
+          <span>Botão azul no canto superior direito da página.</span>
+        </div>
+      </li>
+      <li>
+        <div class="li-num">3</div>
+        <div class="li-body">
+          <strong>Preencha o formulário de cadastro</strong>
+          <span>Nome de usuário, e-mail e senha. Use um e-mail que você acessa regularmente.</span>
+        </div>
+      </li>
+      <li>
+        <div class="li-num">4</div>
+        <div class="li-body">
+          <strong>Confirme seu e-mail</strong>
+          <span>A NASA envia um e-mail de confirmação. Clique no link dentro do e-mail. Se não encontrar, verifique a pasta de Spam.</span>
+        </div>
+      </li>
+      <li>
+        <div class="li-num">5</div>
+        <div class="li-body">
+          <strong>Faça login no site</strong>
+          <span>Com o e-mail confirmado, entre com seu usuário e senha.</span>
+        </div>
+      </li>
+    </ol>
+
+    <a class="cta" href="https://urs.earthdata.nasa.gov/users/new" target="_blank">
+      🚀 Criar conta gratuita na NASA
+    </a>
+
+    <div class="alert alert-amber">
+      <span class="alert-icon">⚠️</span>
+      <div>
+        <strong>Atenção:</strong> Guarde seu nome de usuário e senha — você vai precisar deles para configurar o programa de download.
+      </div>
+    </div>
+  </div>
+
+  <div class="divider">Conta criada? Agora faça o segundo passo</div>
+
+  <!-- PASSO 2 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-badge" style="background:#15803d">2</div>
+      <div>
+        <h2>Autorizar o sistema de download ASF</h2>
+        <p>Feito uma vez, vale para sempre</p>
+      </div>
+    </div>
+
+    <ol>
+      <li>
+        <div class="li-num">1</div>
+        <div class="li-body">
+          <strong>Certifique-se de estar logado</strong>
+          <span>Entre no site da NASA Earthdata com sua conta antes de continuar.</span>
+        </div>
+      </li>
+      <li>
+        <div class="li-num">2</div>
+        <div class="li-body">
+          <strong>Clique no botão abaixo para autorizar o ASF</strong>
+          <span>Esse link abre diretamente a página de autorização do sistema de download (Alaska Satellite Facility).</span>
+        </div>
+      </li>
+      <li>
+        <div class="li-num">3</div>
+        <div class="li-body">
+          <strong>Clique em "Agree" (Concordo)</strong>
+          <span>Uma única confirmação autoriza o acesso aos dados do NISAR.</span>
+        </div>
+      </li>
+      <li>
+        <div class="li-num">4</div>
+        <div class="li-body">
+          <strong>Pronto! Agora você pode baixar dados</strong>
+          <span>Abra o programa NISAR Downloader (<code>INICIAR.bat</code>), configure suas credenciais e clique em Buscar.</span>
+        </div>
+      </li>
+    </ol>
+
+    <a class="cta cta-green" href="https://urs.earthdata.nasa.gov/approve_app?client_id=BO_n7nTIlMljdvU6kRRB3g" target="_blank">
+      ✅ Autorizar o ASF (Alaska Satellite Facility)
+    </a>
+
+    <div class="alert alert-amber">
+      <span class="alert-icon">⚠️</span>
+      <div>
+        <strong>Importante:</strong> O botão acima só funciona se você já estiver logado no site da NASA. Se clicar e aparecer uma tela de login, entre primeiro e depois clique novamente.
+      </div>
+    </div>
+  </div>
+
+  <!-- PASSO 3 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-badge" style="background:#7c3aed">3</div>
+      <div>
+        <h2>Configurar o programa NISAR Downloader</h2>
+        <p>Última etapa — feita uma única vez</p>
+      </div>
+    </div>
+
+    <ol>
+      <li>
+        <div class="li-num">1</div>
+        <div class="li-body">
+          <strong>Abra o arquivo <code>nisar_config.yaml</code></strong>
+          <span>Está na pasta do programa. Abra com Bloco de Notas ou o RStudio.</span>
+        </div>
+      </li>
+      <li>
+        <div class="li-num">2</div>
+        <div class="li-body">
+          <strong>Preencha seu usuário e senha do Earthdata</strong>
+          <span>Substitua <code>SEU_USUARIO_EARTHDATA</code> e <code>SUA_SENHA_EARTHDATA</code> pelos seus dados reais.</span>
+        </div>
+      </li>
+      <li>
+        <div class="li-num">3</div>
+        <div class="li-body">
+          <strong>Salve o arquivo e feche</strong>
+          <span>Não compartilhe esse arquivo — ele contém sua senha.</span>
+        </div>
+      </li>
+      <li>
+        <div class="li-num">4</div>
+        <div class="li-body">
+          <strong>Dê duplo clique em <code>INICIAR.bat</code></strong>
+          <span>O navegador abre automaticamente com a interface de download.</span>
+        </div>
+      </li>
+    </ol>
+
+    <div class="alert alert-green">
+      <span class="alert-icon">✅</span>
+      <div>
+        <strong>Tudo certo!</strong> Com os três passos concluídos, clique em <strong>"🔍 Buscar produtos"</strong> na interface e depois selecione os arquivos para baixar.
+      </div>
+    </div>
+  </div>
+
+  <!-- AJUDA -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-badge" style="background:#dc2626">❓</div>
+      <div>
+        <h2>Problemas comuns</h2>
+        <p>Soluções rápidas</p>
+      </div>
+    </div>
+
+    <ol>
+      <li>
+        <div class="li-num">1</div>
+        <div class="li-body">
+          <strong>Não recebi o e-mail de confirmação da NASA</strong>
+          <span>Verifique a pasta de <strong>Spam</strong>. O remetente é <code>noreply@urs.earthdata.nasa.gov</code>.</span>
+        </div>
+      </li>
+      <li>
+        <div class="li-num">2</div>
+        <div class="li-body">
+          <strong>Erro "401 Unauthorized" ao fazer download</strong>
+          <span>Você precisa autorizar o ASF (Passo 2 acima). Acesse o link de autorização estando logado no Earthdata.</span>
+        </div>
+      </li>
+      <li>
+        <div class="li-num">3</div>
+        <div class="li-body">
+          <strong>Erro "Failed to log in" ou "Invalid credentials"</strong>
+          <span>Verifique se usuário e senha no arquivo <code>nisar_config.yaml</code> estão corretos. Tente fazer login manualmente em <a href="https://urs.earthdata.nasa.gov" target="_blank">urs.earthdata.nasa.gov</a>.</span>
+        </div>
+      </li>
+      <li>
+        <div class="li-num">4</div>
+        <div class="li-body">
+          <strong>Nenhum produto encontrado na busca</strong>
+          <span>Verifique as datas no config — dados disponíveis: <strong>17/out/2025 até 20/jan/2026</strong>. Após jun/2026 haverá mais dados calibrados.</span>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+</div>
+
+<footer>
+  Guia do <strong>NISAR Downloader</strong> · Dados fornecidos por
+  <a href="https://asf.alaska.edu" target="_blank">ASF DAAC</a> ·
+  <a href="https://www.nasa.gov/nisar" target="_blank">Missão NISAR (NASA)</a>
+</footer>
+
+</body>
+</html>

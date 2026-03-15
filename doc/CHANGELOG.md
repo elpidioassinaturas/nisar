@@ -5,6 +5,14 @@ Formato: `[versão] AAAA-MM-DD — Descrição`
 
 ---
 
+## [0.0.6] 2026-03-15
+
+### Adicionado
+- `doc/guia_earthdata.html` — guia passo a passo para usuário leigo criar conta
+  NASA Earthdata, autorizar o app ASF e configurar o programa de download
+
+---
+
 ## [0.0.5] 2026-03-15
 
 ### Adicionado
