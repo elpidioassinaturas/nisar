@@ -5,6 +5,18 @@ Formato: `[versão] AAAA-MM-DD — Descrição`
 
 ---
 
+## [0.0.2] 2026-03-14
+
+### Corrigido
+- Datas de busca no config: corrigido para o período de dados disponíveis (out/2025 – jan/2026)
+- Ordem do polígono WKT da AOI (Brasil): corrigida para sentido anti-horário, eliminando aviso `REVERSE`
+- Mesmo ajuste aplicado em `nisar_config.yaml.example`
+
+### Verificado
+- Dry-run confirmou **50 produtos GCOV** encontrados no Brasil para o período correto
+
+---
+
 ## [0.0.1] 2026-03-14
 
 ### Adicionado
