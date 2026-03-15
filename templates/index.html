@@ -358,6 +358,8 @@
               <th>Direção</th>
               <th>Data de aquisição</th>
               <th>Tamanho</th>
+              <th>Zona UTM</th>
+              <th>Bbox (°)</th>
             </tr>
           </thead>
           <tbody id="results-body"></tbody>
@@ -574,9 +576,18 @@ function renderResults(items) {
   tbody.innerHTML = items.map((item, i) => {
     const thumbHtml = item.thumb
       ? `<img class="thumb-img" src="${escHtml(item.thumb)}" alt="preview" loading="lazy"
-             onclick="openLightbox('${escHtml(item.thumb)}', '${escHtml(item.name)}')" />`
+             onclick="openLightbox('${escHtml(item.thumb)}', '${escHtml(item.name)}')\" />`
       : `<span class="no-thumb">🛰️</span>`;
     const dir = item.direction === 'ASCENDING' ? '⬆️ ASC' : item.direction === 'DESCENDING' ? '⬇️ DESC' : '—';
+    const utm = item.utm_zone
+      ? `<span style="font-weight:600">${item.utm_zone.zone}</span><br/><span style="font-size:.68rem;color:var(--muted)">EPSG:${item.utm_zone.epsg}</span>`
+      : '—';
+    const bboxHtml = item.bbox
+      ? `<span style="font-size:.72rem;line-height:1.5">
+           <b>W</b> ${item.bbox.minLon}° <b>E</b> ${item.bbox.maxLon}°<br/>
+           <b>S</b> ${item.bbox.minLat}° <b>N</b> ${item.bbox.maxLat}°
+         </span>`
+      : '—';
     return `<tr>
       <td class="check-col"><input type="checkbox" class="prod-check" value="${i}" onchange="countChecked()"/></td>
       <td class="thumb-cell">${thumbHtml}</td>
@@ -586,6 +597,8 @@ function renderResults(items) {
       <td style="font-size:.78rem;color:var(--muted)">${dir}</td>
       <td style="font-size:.8rem;color:var(--muted)">${item.date ? item.date.replace('T',' ').slice(0,16) : '—'}</td>
       <td style="font-size:.8rem;color:var(--accent)">${item.size_mb > 0 ? item.size_mb + ' MB' : '—'}</td>
+      <td style="font-size:.78rem;color:#a3e635;text-align:center">${utm}</td>
+      <td style="color:var(--muted)">${bboxHtml}</td>
     </tr>`;
   }).join('');
 }

@@ -5,6 +5,16 @@ Formato: `[versão] AAAA-MM-DD — Descrição`
 
 ---
 
+## [0.0.8] 2026-03-15
+
+### Adicionado
+- Coluna **Zona UTM** na tabela de resultados: calculada a partir das coordenadas do centro da cena
+  (ex.: `18S  (EPSG:32718)`)
+- Coluna **Bbox (°)**: retângulo envolvente da cena em graus WGS84, extraído do GeoJSON da resposta ASF
+  (W/E longitude e S/N latitude)
+
+---
+
 ## [0.0.7] 2026-03-15
 
 ### Adicionado

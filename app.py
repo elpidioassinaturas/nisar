@@ -125,15 +125,42 @@ def api_search():
             browse_urls = p.get("browse") or []
             thumb = browse_urls[0] if browse_urls else None
 
+            # Bounding box em graus (WGS84) extraído da geometria GeoJSON
+            bbox = None
+            utm_zone = None
+            try:
+                coords = r.geometry["coordinates"][0]
+                lons = [c[0] for c in coords]
+                lats = [c[1] for c in coords]
+                min_lon, max_lon = min(lons), max(lons)
+                min_lat, max_lat = min(lats), max(lats)
+                bbox = {
+                    "minLon": round(min_lon, 2),
+                    "maxLon": round(max_lon, 2),
+                    "minLat": round(min_lat, 2),
+                    "maxLat": round(max_lat, 2),
+                }
+                # Zona UTM derivada do centro do polígono
+                center_lon = (min_lon + max_lon) / 2
+                center_lat = (min_lat + max_lat) / 2
+                zone_num = int((center_lon + 180) / 6) + 1
+                hemi = "N" if center_lat >= 0 else "S"
+                epsg = 32600 + zone_num if hemi == "N" else 32700 + zone_num
+                utm_zone = {"zone": f"{zone_num}{hemi}", "epsg": epsg}
+            except Exception:
+                pass
+
             items.append({
-                "name":     str(p.get("sceneName") or ""),
-                "product":  str(p.get("processingLevel") or ""),
-                "date":     str(p.get("startTime") or ""),
-                "size_mb":  size_mb,
-                "url":      str(p.get("url") or ""),
-                "thumb":    thumb,
+                "name":      str(p.get("sceneName") or ""),
+                "product":   str(p.get("processingLevel") or ""),
+                "date":      str(p.get("startTime") or ""),
+                "size_mb":   size_mb,
+                "url":       str(p.get("url") or ""),
+                "thumb":     thumb,
                 "direction": str(p.get("flightDirection") or ""),
-                "orbit":    p.get("orbit"),
+                "orbit":     p.get("orbit"),
+                "utm_zone":  utm_zone,
+                "bbox":      bbox,
             })
         return jsonify({"results": items, "total": len(items)})
     except Exception as e:
