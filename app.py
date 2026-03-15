@@ -104,20 +104,36 @@ def api_search():
         items = []
         for r in results:
             p = r.properties
-            # bytes pode vir como dict, int, float ou None — trata tudo com segurança
-            raw_bytes = p.get("bytes", 0) or 0
+
+            # bytes é um dict: {filename: {bytes: N, ...}} — soma todos os arquivos
+            raw_bytes = p.get("bytes", None)
             if isinstance(raw_bytes, dict):
-                raw_bytes = 0
+                total_bytes = sum(
+                    v.get("bytes", 0) if isinstance(v, dict) else (v or 0)
+                    for v in raw_bytes.values()
+                )
+            elif isinstance(raw_bytes, (int, float)):
+                total_bytes = raw_bytes
+            else:
+                total_bytes = 0
             try:
-                size_mb = round(float(raw_bytes) / 1e6, 1)
+                size_mb = round(float(total_bytes) / 1e6, 1)
             except (TypeError, ValueError):
                 size_mb = 0
+
+            # browse: lista de URLs de thumbnails PNG
+            browse_urls = p.get("browse") or []
+            thumb = browse_urls[0] if browse_urls else None
+
             items.append({
                 "name":     str(p.get("sceneName") or ""),
                 "product":  str(p.get("processingLevel") or ""),
                 "date":     str(p.get("startTime") or ""),
                 "size_mb":  size_mb,
                 "url":      str(p.get("url") or ""),
+                "thumb":    thumb,
+                "direction": str(p.get("flightDirection") or ""),
+                "orbit":    p.get("orbit"),
             })
         return jsonify({"results": items, "total": len(items)})
     except Exception as e:

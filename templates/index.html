@@ -250,6 +250,46 @@
     #toast.ok   { border-color: var(--green); }
     #toast.err  { border-color: var(--red); }
 
+    /* ── Thumbnail ── */
+    .thumb-cell { width: 64px; text-align: center; }
+    .thumb-img {
+      width: 56px; height: 56px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      cursor: zoom-in;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .thumb-img:hover { transform: scale(1.12); box-shadow: 0 4px 20px rgba(0,0,0,.6); }
+    .no-thumb {
+      width: 56px; height: 56px;
+      border-radius: 6px;
+      border: 1px dashed var(--border);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 20px; color: var(--muted);
+    }
+    /* ── Lightbox ── */
+    #lightbox {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.85);
+      z-index: 1000;
+      align-items: center; justify-content: center;
+    }
+    #lightbox.open { display: flex; }
+    #lightbox img { max-width: 90vw; max-height: 85vh; border-radius: 10px; box-shadow: 0 8px 40px rgba(0,0,0,.8); }
+    #lightbox-close {
+      position: absolute; top: 20px; right: 28px;
+      color: #fff; font-size: 2rem; cursor: pointer;
+      background: none; border: none; line-height: 1;
+    }
+    #lightbox-name {
+      position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,.7); color: #fff;
+      font-size: .75rem; padding: 6px 16px; border-radius: 20px;
+      max-width: 80vw; text-align: center; font-family: monospace;
+    }
+
     @media (max-width: 640px) {
       .grid-2 { grid-template-columns: 1fr; }
       header { padding: 14px 16px; }
@@ -264,7 +304,7 @@
     <h1>NISAR Downloader</h1>
     <p>NASA-ISRO Synthetic Aperture Radar · ASF DAAC</p>
   </div>
-  <span class="badge" id="version-badge">v0.0.3</span>
+  <span class="badge" id="version-badge">v0.0.5</span>
 </header>
 
 <div class="container">
@@ -311,9 +351,11 @@
           <thead>
             <tr>
               <th class="check-col"><input type="checkbox" id="check-all2" onchange="toggleAll(this)"/></th>
+              <th class="thumb-cell">Preview</th>
               <th>#</th>
               <th>Nome do produto</th>
               <th>Tipo</th>
+              <th>Direção</th>
               <th>Data de aquisição</th>
               <th>Tamanho</th>
             </tr>
@@ -423,6 +465,13 @@
 <!-- TOAST -->
 <div id="toast"></div>
 
+<!-- LIGHTBOX -->
+<div id="lightbox" onclick="closeLightbox()">
+  <button id="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img src="" alt="Preview NISAR" />
+  <div id="lightbox-name"></div>
+</div>
+
 <script>
 // ── State ─────────────────────────────────────────────────────
 let searchResults = [];
@@ -515,23 +564,40 @@ function renderResults(items) {
 
   const tbody = document.getElementById('results-body');
   if (items.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state">
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">
       <div class="icon">🔭</div>
       <div>Nenhum produto encontrado.<br/>Verifique os filtros na aba Configuração.</div>
     </div></td></tr>`;
     return;
   }
 
-  tbody.innerHTML = items.map((item, i) => `
-    <tr>
+  tbody.innerHTML = items.map((item, i) => {
+    const thumbHtml = item.thumb
+      ? `<img class="thumb-img" src="${escHtml(item.thumb)}" alt="preview" loading="lazy"
+             onclick="openLightbox('${escHtml(item.thumb)}', '${escHtml(item.name)}')" />`
+      : `<span class="no-thumb">🛰️</span>`;
+    const dir = item.direction === 'ASCENDING' ? '⬆️ ASC' : item.direction === 'DESCENDING' ? '⬇️ DESC' : '—';
+    return `<tr>
       <td class="check-col"><input type="checkbox" class="prod-check" value="${i}" onchange="countChecked()"/></td>
+      <td class="thumb-cell">${thumbHtml}</td>
       <td style="color:var(--muted);font-size:.78rem">${i+1}</td>
       <td class="name-cell" title="${item.name}">${item.name}</td>
       <td><span class="tag">${item.product}</span></td>
+      <td style="font-size:.78rem;color:var(--muted)">${dir}</td>
       <td style="font-size:.8rem;color:var(--muted)">${item.date ? item.date.replace('T',' ').slice(0,16) : '—'}</td>
       <td style="font-size:.8rem;color:var(--accent)">${item.size_mb > 0 ? item.size_mb + ' MB' : '—'}</td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
+}
+
+function openLightbox(url, name) {
+  const lb = document.getElementById('lightbox');
+  lb.querySelector('img').src = url;
+  document.getElementById('lightbox-name').textContent = name;
+  lb.classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
 }
 
 function toggleAll(cb) {

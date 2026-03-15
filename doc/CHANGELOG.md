@@ -5,6 +5,16 @@ Formato: `[versão] AAAA-MM-DD — Descrição`
 
 ---
 
+## [0.0.5] 2026-03-15
+
+### Adicionado
+- Coluna **Preview** na tabela: thumbnails SAR (browse images) de cada produto
+- Lightbox ao clicar na miniatura — abre a imagem em tela cheia
+- Coluna **Direção** (Ascending/Descending) com ícone visual
+- Tamanho real dos arquivos corrigido (extraído do dict `bytes` do ASF)
+
+---
+
 ## [0.0.4] 2026-03-14
 
 ### Corrigido
