@@ -5,6 +5,16 @@ Formato: `[versão] AAAA-MM-DD — Descrição`
 
 ---
 
+## [0.0.4] 2026-03-14
+
+### Corrigido
+- Erro `unsupported operand type(s) for /: 'dict' and 'float'` na rota `/api/search`
+- Campo `bytes` do ASF retornava `dict` em vez de número — tratamento defensivo adicionado
+- Todos os campos de texto da resposta JSON protegidos com `str()` para evitar erros de tipo
+- Adicionado `traceback` nos erros da API para facilitar diagnóstico futuro
+
+---
+
 ## [0.0.3] 2026-03-14
 
 ### Adicionado

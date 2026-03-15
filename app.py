@@ -104,16 +104,25 @@ def api_search():
         items = []
         for r in results:
             p = r.properties
+            # bytes pode vir como dict, int, float ou None — trata tudo com segurança
+            raw_bytes = p.get("bytes", 0) or 0
+            if isinstance(raw_bytes, dict):
+                raw_bytes = 0
+            try:
+                size_mb = round(float(raw_bytes) / 1e6, 1)
+            except (TypeError, ValueError):
+                size_mb = 0
             items.append({
-                "name":       p.get("sceneName", ""),
-                "product":    p.get("processingLevel", ""),
-                "date":       p.get("startTime", ""),
-                "size_mb":    round((p.get("bytes", 0) or 0) / 1e6, 1),
-                "url":        p.get("url", ""),
+                "name":     str(p.get("sceneName") or ""),
+                "product":  str(p.get("processingLevel") or ""),
+                "date":     str(p.get("startTime") or ""),
+                "size_mb":  size_mb,
+                "url":      str(p.get("url") or ""),
             })
         return jsonify({"results": items, "total": len(items)})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        import traceback
+        return jsonify({"error": str(e), "detail": traceback.format_exc()}), 500
 
 
 def _download_worker(results_json: list, cfg: dict):
