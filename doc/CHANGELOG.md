@@ -5,6 +5,16 @@ Formato: `[versão] AAAA-MM-DD — Descrição`
 
 ---
 
+## [0.0.7] 2026-03-15
+
+### Adicionado
+- `doc/bandas_gcov.html` — guia técnico completo das bandas do produto GCOV:
+  todas as bandas diagonais (HHHH, HVHV, VVVV, RHRH, RVRV) e off-diagonais
+  complexas (HHHV, HHVV, HVVV, RHRV), sistema de coordenadas UTM/WGS84,
+  estrutura interna HDF5, exemplo Python e tabela resumo
+
+---
+
 ## [0.0.6] 2026-03-15
 
 ### Adicionado

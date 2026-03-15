@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bandas NISAR GCOV — Guia Técnico</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:     #0d1117;
+      --card:   #161b22;
+      --border: #30363d;
+      --blue:   #2563eb;
+      --green:  #22c55e;
+      --amber:  #f59e0b;
+      --red:    #ef4444;
+      --purple: #a855f7;
+      --text:   #e6edf3;
+      --muted:  #7d8590;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1a3a6b 60%, #0f172a 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 52px 24px;
+      text-align: center;
+    }
+    .hero .sat { font-size: 52px; margin-bottom: 14px; }
+    .hero h1 { font-size: 1.9rem; font-weight: 700; margin-bottom: 8px; }
+    .hero p  { color: #93c5fd; max-width: 580px; margin: 0 auto; font-size: .97rem; }
+
+    /* Layout */
+    .container { max-width: 900px; margin: 0 auto; padding: 44px 20px 80px; }
+
+    /* Section titles */
+    h2.section-title {
+      font-size: 1.1rem; font-weight: 700;
+      color: #93c5fd;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+      margin: 40px 0 20px;
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px 24px;
+      margin-bottom: 16px;
+    }
+
+    /* Band grid */
+    .band-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 640px) { .band-grid { grid-template-columns: 1fr; } }
+
+    .band-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      border-top: 3px solid var(--blue);
+    }
+    .band-card.real  { border-top-color: var(--green); }
+    .band-card.complex { border-top-color: var(--purple); }
+    .band-card.compact { border-top-color: var(--amber); }
+
+    .band-name {
+      font-family: 'Fira Code', monospace;
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .band-type {
+      font-size: .72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+    .type-real    { background: rgba(34,197,94,.15);  color: var(--green); }
+    .type-complex { background: rgba(168,85,247,.15); color: var(--purple); }
+    .type-compact { background: rgba(245,158,11,.15); color: var(--amber); }
+
+    .band-desc { font-size: .87rem; color: #94a3b8; line-height: 1.6; }
+    .band-pol {
+      font-size: .78rem;
+      color: var(--muted);
+      margin-top: 8px;
+      font-family: 'Fira Code', monospace;
+    }
+
+    /* Info table */
+    .info-grid { display: grid; grid-template-columns: auto 1fr; gap: 10px 20px; font-size: .9rem; }
+    .info-label { color: var(--muted); font-weight: 500; white-space: nowrap; }
+    .info-val   { color: var(--text); }
+    code {
+      font-family: 'Fira Code', monospace;
+      font-size: .85rem;
+      background: rgba(255,255,255,.07);
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    /* Alert */
+    .alert {
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: .88rem;
+      margin-top: 20px;
+      border-left: 4px solid;
+      display: flex; gap: 10px;
+    }
+    .alert-blue   { background: rgba(37,99,235,.1);  border-color: var(--blue);   color: #93c5fd; }
+    .alert-amber  { background: rgba(245,158,11,.1); border-color: var(--amber);  color: #fcd34d; }
+    .alert-green  { background: rgba(34,197,94,.1);  border-color: var(--green);  color: #86efac; }
+
+    /* HDF5 tree */
+    .tree {
+      font-family: 'Fira Code', monospace;
+      font-size: .82rem;
+      background: #0a0e14;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 18px;
+      line-height: 2;
+      color: #94a3b8;
+      overflow-x: auto;
+    }
+    .tree .grp  { color: #60a5fa; }
+    .tree .ds   { color: #86efac; }
+    .tree .attr { color: #fcd34d; }
+    .tree .cmt  { color: var(--muted); }
+
+    /* Footer */
+    footer {
+      text-align: center; font-size: .78rem; color: var(--muted);
+      padding: 24px; border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--blue); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="sat">📡</div>
+  <h1>Bandas e Georreferenciamento — NISAR GCOV</h1>
+  <p>Descrição técnica das bandas de radar, termos de covariância e sistema de coordenadas dos produtos L2 GCOV do satélite NISAR</p>
+</div>
+
+<div class="container">
+
+  <!-- VISÃO GERAL -->
+  <h2 class="section-title">🔭 O que é o produto GCOV?</h2>
+  <div class="card">
+    <div class="info-grid">
+      <span class="info-label">Nome completo</span>
+      <span class="info-val">Geocoded Polarimetric Covariance (Covariância Polarimétrica Geocodificada)</span>
+
+      <span class="info-label">Nível</span>
+      <span class="info-val">Nível 2 (L2) — dados geocodificados e corrigidos para análise direta</span>
+
+      <span class="info-label">Formato</span>
+      <span class="info-val"><code>.h5</code> (HDF5) com metadados CF Conventions</span>
+
+      <span class="info-label">O que representa</span>
+      <span class="info-val">Retrorradiação (backscatter) do radar corrigida radiometria e relevo (γ⁰ — gamma naught)</span>
+
+      <span class="info-label">Uso típico</span>
+      <span class="info-val">Detecção de mudanças, umidade do solo, vegetação, monitoramento de desastres, uso da terra</span>
+    </div>
+  </div>
+
+  <!-- SISTEMA DE COORDENADAS -->
+  <h2 class="section-title">🌐 Sistema de Coordenadas e Georreferenciamento</h2>
+  <div class="card">
+    <div class="info-grid">
+      <span class="info-label">Projeção</span>
+      <span class="info-val"><strong>UTM — Universal Transverse Mercator</strong> (zona UTM correspondente à localização do dado)</span>
+
+      <span class="info-label">Datum / Elipsoide</span>
+      <span class="info-val"><strong>WGS84</strong> — o mesmo usado pelo GPS</span>
+
+      <span class="info-label">Código EPSG</span>
+      <span class="info-val">Varia por zona: ex. <code>EPSG:32722</code> (zona 22S — Brasil SE), <code>EPSG:32718</code> (zona 18S — Brasil NO)</span>
+
+      <span class="info-label">Resolução espacial</span>
+      <span class="info-val"><strong>10 m × 10 m</strong> ou <strong>20 m × 20 m</strong> dependendo de área de cobertura</span>
+
+      <span class="info-label">Alinhamento da grade</span>
+      <span class="info-val">Grade uniforme N-S / L-O em metros (coordenadas projetadas)</span>
+
+      <span class="info-label">Correção de relevo</span>
+      <span class="info-val">Radiometric Terrain Correction (RTC) com DEM Copernicus 30 m e 90 m</span>
+
+      <span class="info-label">Software compatível</span>
+      <span class="info-val">ArcGIS Pro ≥ 3.4, QGIS (renomear <code>.h5</code> → <code>.nc</code>), Python <code>h5py</code>, R <code>rhdf5</code></span>
+    </div>
+
+    <div class="alert alert-amber">
+      <span>⚠️</span>
+      <div>
+        <strong>QGIS / GDAL mais antigo:</strong> Se o software não reconhecer o sistema de coordenadas, renomeie o arquivo de <code>.h5</code> para <code>.nc</code> (netCDF). O conteúdo é idêntico — só a extensão muda.
+      </div>
+    </div>
+  </div>
+
+  <!-- ESTRUTURA HDF5 -->
+  <h2 class="section-title">🗂️ Estrutura Interna do Arquivo HDF5</h2>
+  <div class="tree">
+<span class="grp">/ (raiz)</span>
+├── <span class="grp">metadata/</span>
+│   ├── <span class="ds">orbit</span>            <span class="cmt"># dados orbitais (altitude, velocidade)</span>
+│   ├── <span class="ds">processingInformation</span>  <span class="cmt"># versão do algoritmo, DEM usado</span>
+│   └── <span class="ds">geolocation</span>      <span class="cmt"># grade de controle geoespacial</span>
+│
+└── <span class="grp">science/</span>
+    └── <span class="grp">LSAR/</span>             <span class="cmt"># L-band SAR (banda L)</span>
+        └── <span class="grp">GCOV/</span>
+            ├── <span class="grp">grids/</span>
+            │   ├── <span class="grp">frequencyA/</span>   <span class="cmt"># frequência primária (L-band: 1,25 GHz)</span>
+            │   │   ├── <span class="ds">HHHH</span>      <span class="cmt"># backscatter HH (diagonal)</span>
+            │   │   ├── <span class="ds">HVHV</span>      <span class="cmt"># backscatter HV (diagonal)</span>
+            │   │   ├── <span class="ds">VVVV</span>      <span class="cmt"># backscatter VV (diagonal)</span>
+            │   │   ├── <span class="ds">HHHV</span>      <span class="cmt"># covariância HH×HV* (off-diagonal, complexo)</span>
+            │   │   ├── <span class="ds">HHVV</span>      <span class="cmt"># covariância HH×VV* (off-diagonal, complexo)</span>
+            │   │   ├── <span class="ds">HVVV</span>      <span class="cmt"># covariância HV×VV* (off-diagonal, complexo)</span>
+            │   │   ├── <span class="ds">xCoordinateSpacing</span>   <span class="cmt"># espaçamento em X (metros)</span>
+            │   │   ├── <span class="ds">yCoordinateSpacing</span>   <span class="cmt"># espaçamento em Y (metros)</span>
+            │   │   ├── <span class="ds">xCoordinates</span>        <span class="cmt"># vetor de coordenadas X</span>
+            │   │   └── <span class="ds">yCoordinates</span>        <span class="cmt"># vetor de coordenadas Y</span>
+            │   └── <span class="grp">frequencyB/</span>   <span class="cmt"># S-band (quando disponível)</span>
+            └── <span class="attr">projection</span>            <span class="cmt"># definição WKT do CRS (UTM/WGS84)</span>
+  </div>
+
+  <!-- BANDAS DIAGONAIS -->
+  <h2 class="section-title">📊 Bandas Diagonais — Intensidade do Backscatter</h2>
+  <p style="color:var(--muted);font-size:.87rem;margin-bottom:16px">
+    As bandas diagonais representam a <strong>potência do retorno do radar</strong> (γ⁰) em cada polarização. São valores <strong>reais positivos</strong> e as mais usadas em análises de uso da terra e vegetação.
+  </p>
+
+  <div class="band-grid">
+    <div class="band-card real">
+      <div class="band-name">HHHH</div>
+      <span class="band-type type-real">Real · Diagonal</span>
+      <div class="band-desc">
+        <strong>Backscatter HH:</strong> transmissão e recepção horizontal. Penetra bem em vegetação densa e solos úmidos. Sensível à rugosidade da superfície e ao volume de biomassa.
+      </div>
+      <div class="band-pol">Tx: H · Rx: H</div>
+    </div>
+
+    <div class="band-card real">
+      <div class="band-name">VVVV</div>
+      <span class="band-type type-real">Real · Diagonal</span>
+      <div class="band-desc">
+        <strong>Backscatter VV:</strong> transmissão e recepção vertical. Responde à estrutura vertical das culturas e áreas urbanas. Usado em detecção de inundações e agricultura.
+      </div>
+      <div class="band-pol">Tx: V · Rx: V</div>
+    </div>
+
+    <div class="band-card real">
+      <div class="band-name">HVHV</div>
+      <span class="band-type type-real">Real · Diagonal</span>
+      <div class="band-desc">
+        <strong>Backscatter HV (cross-pol):</strong> transmissão horizontal e recepção vertical. Muito sensível ao volume e estrutura interna da vegetação — ideal para estimar biomassa florestal.
+      </div>
+      <div class="band-pol">Tx: H · Rx: V</div>
+    </div>
+
+    <div class="band-card real">
+      <div class="band-name">VHVH</div>
+      <span class="band-type type-real">Real · Diagonal</span>
+      <div class="band-desc">
+        <strong>Backscatter VH (cross-pol):</strong> transmissão vertical e recepção horizontal. Similar ao HVHV. Para L-band o NISAR usa principalmente HH/HV — VH/VV disponíveis em modo quad-pol.
+      </div>
+      <div class="band-pol">Tx: V · Rx: H</div>
+    </div>
+
+    <div class="band-card compact">
+      <div class="band-name">RHRH</div>
+      <span class="band-type type-compact">Real · Compact-pol</span>
+      <div class="band-desc">
+        <strong>Compact-pol RH:</strong> transmissão circular direita, recepção horizontal. Modo compacto fornece informação polarimétrica com menos largura de banda — usado em certas faixas de cobertura.
+      </div>
+      <div class="band-pol">Tx: R (circular) · Rx: H</div>
+    </div>
+
+    <div class="band-card compact">
+      <div class="band-name">RVRV</div>
+      <span class="band-type type-compact">Real · Compact-pol</span>
+      <div class="band-desc">
+        <strong>Compact-pol RV:</strong> transmissão circular direita, recepção vertical. Combinado com RHRH permite reconstrução parcial da matriz de covariância polarimétrica.
+      </div>
+      <div class="band-pol">Tx: R (circular) · Rx: V</div>
+    </div>
+  </div>
+
+  <!-- BANDAS OFF-DIAGONAL -->
+  <h2 class="section-title">🔄 Bandas Off-Diagonais — Covariância entre Polarizações</h2>
+  <p style="color:var(--muted);font-size:.87rem;margin-bottom:16px">
+    Os termos off-diagonais são <strong>valores complexos</strong> (parte real + imaginária) que descrevem a correlação e diferença de fase entre polarizações. Presentes apenas em dados <strong>quad-pol</strong> ou em alguns produtos dual-pol.
+  </p>
+
+  <div class="band-grid">
+    <div class="band-card complex">
+      <div class="band-name">HHHV</div>
+      <span class="band-type type-complex">Complexo · Off-diagonal</span>
+      <div class="band-desc">
+        Correlação cruzada entre HH e HV. Revela mecanismos de espalhamento mistos — útil para separar superfícies de volume em florestas.
+      </div>
+    </div>
+
+    <div class="band-card complex">
+      <div class="band-name">HHVV</div>
+      <span class="band-type type-complex">Complexo · Off-diagonal</span>
+      <div class="band-desc">
+        Correlação entre HH e VV. A diferença de fase (argumento complexo) é usada em interferometria e discriminação de mecanismos de espalhamento (diedro vs. espalhamento distribuído).
+      </div>
+    </div>
+
+    <div class="band-card complex">
+      <div class="band-name">HVVV</div>
+      <span class="band-type type-complex">Complexo · Off-diagonal</span>
+      <div class="band-desc">
+        Correlação entre HV e VV. Relacionado a estruturas orientadas (ex. canaviais, vento em vegetação). Menos comum em modo dual-pol.
+      </div>
+    </div>
+
+    <div class="band-card complex">
+      <div class="band-name">RHRV</div>
+      <span class="band-type type-complex">Complexo · Compact-pol</span>
+      <div class="band-desc">
+        Correlação entre RH e RV no modo compact-pol. Permite estimar o grau de pureza polarimétrica (m-chi decomposition).
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-blue" style="margin-top:8px">
+    <span>ℹ️</span>
+    <div>
+      A maioria dos dados brasileiros disponíveis (out/2025–jan/2026) está em modo <strong>dual-pol HH+HV</strong> — ou seja, você encontrará principalmente as bandas <code>HHHH</code>, <code>HVHV</code> e <code>HHHV</code>.
+    </div>
+  </div>
+
+  <!-- COMO ABRIR EM PYTHON -->
+  <h2 class="section-title">🐍 Como ler as bandas em Python (exemplo rápido)</h2>
+  <div class="card">
+    <pre style="font-family:'Fira Code',monospace;font-size:.8rem;color:#86efac;line-height:1.8;overflow-x:auto">
+import h5py
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Abrir o arquivo HDF5
+with h5py.File("NISAR_L2_PR_GCOV_...h5", "r") as f:
+
+    # Acessar a banda HHHH (backscatter HH em dB)
+    hhhh = f["/science/LSAR/GCOV/grids/frequencyA/HHHH"][:]
+    x    = f["/science/LSAR/GCOV/grids/frequencyA/xCoordinates"][:]
+    y    = f["/science/LSAR/GCOV/grids/frequencyA/yCoordinates"][:]
+
+    # Converter para dB
+    hhhh_db = 10 * np.log10(hhhh + 1e-10)
+
+    # Visualizar
+    plt.imshow(hhhh_db, cmap="gray", vmin=-25, vmax=0)
+    plt.colorbar(label="γ⁰ (dB)")
+    plt.title("NISAR L-band HH Backscatter")
+    plt.show()
+    </pre>
+  </div>
+
+  <!-- TABELA RESUMO -->
+  <h2 class="section-title">📋 Tabela Resumo das Bandas</h2>
+  <div style="overflow-x:auto;border-radius:10px;border:1px solid var(--border)">
+    <table style="width:100%;border-collapse:collapse;font-size:.85rem">
+      <thead style="background:#1c2230">
+        <tr>
+          <th style="padding:12px 16px;text-align:left;color:var(--muted);font-weight:500">Banda</th>
+          <th style="padding:12px 16px;text-align:left;color:var(--muted);font-weight:500">Tipo</th>
+          <th style="padding:12px 16px;text-align:left;color:var(--muted);font-weight:500">Modo</th>
+          <th style="padding:12px 16px;text-align:left;color:var(--muted);font-weight:500">Principal uso</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-top:1px solid var(--border)"><td style="padding:10px 16px;font-family:'Fira Code',monospace">HHHH</td><td style="padding:10px 16px;color:#86efac">Real</td><td style="padding:10px 16px">Dual/Quad</td><td style="padding:10px 16px;color:var(--muted)">Biomassa, umidade, superfície</td></tr>
+        <tr style="border-top:1px solid var(--border)"><td style="padding:10px 16px;font-family:'Fira Code',monospace">HVHV</td><td style="padding:10px 16px;color:#86efac">Real</td><td style="padding:10px 16px">Dual/Quad</td><td style="padding:10px 16px;color:var(--muted)">Estimativa de biomassa florestal</td></tr>
+        <tr style="border-top:1px solid var(--border)"><td style="padding:10px 16px;font-family:'Fira Code',monospace">VVVV</td><td style="padding:10px 16px;color:#86efac">Real</td><td style="padding:10px 16px">Quad</td><td style="padding:10px 16px;color:var(--muted)">Agricultura, inundações, urbano</td></tr>
+        <tr style="border-top:1px solid var(--border)"><td style="padding:10px 16px;font-family:'Fira Code',monospace">VHVH</td><td style="padding:10px 16px;color:#86efac">Real</td><td style="padding:10px 16px">Quad</td><td style="padding:10px 16px;color:var(--muted)">Similar ao HVHV</td></tr>
+        <tr style="border-top:1px solid var(--border)"><td style="padding:10px 16px;font-family:'Fira Code',monospace">RHRH</td><td style="padding:10px 16px;color:#fcd34d">Real</td><td style="padding:10px 16px">Compact</td><td style="padding:10px 16px;color:var(--muted)">Cobertura global compacta</td></tr>
+        <tr style="border-top:1px solid var(--border)"><td style="padding:10px 16px;font-family:'Fira Code',monospace">RVRV</td><td style="padding:10px 16px;color:#fcd34d">Real</td><td style="padding:10px 16px">Compact</td><td style="padding:10px 16px;color:var(--muted)">Cobertura global compacta</td></tr>
+        <tr style="border-top:1px solid var(--border)"><td style="padding:10px 16px;font-family:'Fira Code',monospace">HHHV</td><td style="padding:10px 16px;color:#c4b5fd">Complexo</td><td style="padding:10px 16px">Quad</td><td style="padding:10px 16px;color:var(--muted)">Decomposição polarimétrica</td></tr>
+        <tr style="border-top:1px solid var(--border)"><td style="padding:10px 16px;font-family:'Fira Code',monospace">HHVV</td><td style="padding:10px 16px;color:#c4b5fd">Complexo</td><td style="padding:10px 16px">Quad</td><td style="padding:10px 16px;color:var(--muted)">Diferença de fase, interferometria</td></tr>
+        <tr style="border-top:1px solid var(--border)"><td style="padding:10px 16px;font-family:'Fira Code',monospace">HVVV</td><td style="padding:10px 16px;color:#c4b5fd">Complexo</td><td style="padding:10px 16px">Quad</td><td style="padding:10px 16px;color:var(--muted)">Vegetação orientada</td></tr>
+        <tr style="border-top:1px solid var(--border)"><td style="padding:10px 16px;font-family:'Fira Code',monospace">RHRV</td><td style="padding:10px 16px;color:#c4b5fd">Complexo</td><td style="padding:10px 16px">Compact</td><td style="padding:10px 16px;color:var(--muted)">Decomposição m-chi</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="alert alert-green" style="margin-top:20px">
+    <span>✅</span>
+    <div>
+      <strong>Para começar:</strong> use a banda <code>HHHH</code> em dB para visualização geral e a razão <code>HVHV / HHHH</code> para análise de vegetação/biomassa. São as bandas mais disponíveis nos dados atuais do Brasil.
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Referências:
+  <a href="https://asf.alaska.edu/data-sets/sar-data-sets/nisar/" target="_blank">ASF DAAC — NISAR</a> ·
+  <a href="https://nisar.jpl.nasa.gov/data/products/" target="_blank">JPL NISAR Products</a> ·
+  v0.0.7 — NISAR Downloader
+</footer>
+
+</body>
+</html>
