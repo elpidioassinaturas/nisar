@@ -18,11 +18,20 @@ try:
 except ImportError:
     asf = None
 
+try:
+    from extract_nisar import extract_layers, AVAILABLE_LAYERS
+except ImportError:
+    extract_layers = None
+    AVAILABLE_LAYERS = []
+
 app = Flask(__name__)
 
 CONFIG_PATH = Path("nisar_config.yaml")
 LOG_QUEUE: queue.Queue = queue.Queue()
 DOWNLOAD_STATUS = {"running": False, "done": 0, "total": 0, "error": None}
+
+EXTRACT_LOG_QUEUE: queue.Queue = queue.Queue()
+EXTRACT_STATUS = {"running": False, "files": [], "error": None}
 
 
 # ── Config helpers ────────────────────────────────────────────────────────────
@@ -248,6 +257,84 @@ def api_files():
                     "date": datetime.fromtimestamp(f.stat().st_mtime).strftime("%Y-%m-%d %H:%M"),
                 })
     return jsonify({"files": files})
+
+
+# ── Extract ───────────────────────────────────────────────────────────────────
+
+@app.route("/api/extract-info")
+def api_extract_info():
+    """Retorna layers disponíveis para extração."""
+    return jsonify({"layers": AVAILABLE_LAYERS, "available": extract_layers is not None})
+
+
+def _extract_worker(h5_path: str, out_dir: str, frequencies: list, layers: list):
+    global EXTRACT_STATUS
+    EXTRACT_STATUS.update({"running": True, "files": [], "error": None})
+    try:
+        def log(msg):
+            EXTRACT_LOG_QUEUE.put(msg)
+
+        files = extract_layers(h5_path, out_dir, frequencies, layers, log_fn=log)
+        EXTRACT_STATUS["files"] = files
+    except Exception as e:
+        import traceback
+        EXTRACT_STATUS["error"] = str(e)
+        EXTRACT_LOG_QUEUE.put(f"✗ Erro: {e}")
+        EXTRACT_LOG_QUEUE.put(traceback.format_exc())
+    finally:
+        EXTRACT_STATUS["running"] = False
+        EXTRACT_LOG_QUEUE.put("__DONE__")
+
+
+@app.route("/api/extract", methods=["POST"])
+def api_extract():
+    if not extract_layers:
+        return jsonify({"error": "rasterio não instalado. Execute: pip install rasterio>=1.3"}), 500
+    if EXTRACT_STATUS["running"]:
+        return jsonify({"error": "Extração já em andamento"}), 400
+
+    data = request.json or {}
+    cfg  = load_config()
+    h5_file     = data.get("file", "")
+    dl_dir      = cfg.get("download", {}).get("directory", "downloads/nisar")
+    h5_path     = str(Path(dl_dir) / h5_file)
+    out_subdir  = data.get("out_subdir", "geotiff")
+    out_dir     = str(Path(dl_dir).parent / out_subdir)
+    frequencies = data.get("frequencies", ["frequencyA"])
+    layers      = data.get("layers", ["HHHH", "HVHV", "mask"])
+
+    if not Path(h5_path).exists():
+        return jsonify({"error": f"Arquivo não encontrado: {h5_path}"}), 404
+
+    # Limpa fila anterior
+    while not EXTRACT_LOG_QUEUE.empty():
+        try: EXTRACT_LOG_QUEUE.get_nowait()
+        except: break
+
+    t = threading.Thread(target=_extract_worker,
+                         args=(h5_path, out_dir, frequencies, layers), daemon=True)
+    t.start()
+    return jsonify({"ok": True, "out_dir": out_dir})
+
+
+@app.route("/api/extract-stream")
+def api_extract_stream():
+    def gen():
+        while True:
+            try:
+                msg = EXTRACT_LOG_QUEUE.get(timeout=30)
+                yield f"data: {json.dumps({'msg': msg})}\n\n"
+                if msg == "__DONE__":
+                    break
+            except queue.Empty:
+                yield f"data: {json.dumps({'msg': '__PING__'})}\n\n"
+    return Response(gen(), mimetype="text/event-stream",
+                    headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+@app.route("/api/extract-status")
+def api_extract_status():
+    return jsonify(EXTRACT_STATUS)
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────

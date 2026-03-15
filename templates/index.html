@@ -457,10 +457,60 @@
   <!-- ══ ABA: ARQUIVOS ══ -->
   <div id="panel-arquivos" class="panel">
     <div class="card">
-      <h2>Arquivos baixados</h2>
+      <h2>Arquivos baixados (.h5)</h2>
       <div id="files-list"></div>
     </div>
+
+    <!-- Painel de extração -->
+    <div class="card" id="extract-card" style="display:none">
+      <h2>🗂️ Extrair camadas — <span id="extract-filename" style="color:#60a5fa;font-weight:400;text-transform:none;letter-spacing:0"></span></h2>
+
+      <div style="display:flex;gap:32px;flex-wrap:wrap;margin-bottom:18px">
+        <!-- Frequências -->
+        <div>
+          <div style="font-size:.8rem;color:var(--muted);margin-bottom:8px;font-weight:600">FREQUÊNCIA</div>
+          <label style="display:block;font-size:.85rem;margin-bottom:6px;cursor:pointer">
+            <input type="checkbox" class="freq-check" value="frequencyA" checked/> L-band freq A (20 m)
+          </label>
+          <label style="display:block;font-size:.85rem;cursor:pointer">
+            <input type="checkbox" class="freq-check" value="frequencyB"/> S-band freq B (80 m)
+          </label>
+        </div>
+        <!-- Layers -->
+        <div>
+          <div style="font-size:.8rem;color:var(--muted);margin-bottom:8px;font-weight:600">LAYERS</div>
+          <label style="display:block;font-size:.85rem;margin-bottom:4px;cursor:pointer"><input type="checkbox" class="layer-check" value="HHHH" checked/> HHHH — co-pol HH</label>
+          <label style="display:block;font-size:.85rem;margin-bottom:4px;cursor:pointer"><input type="checkbox" class="layer-check" value="HVHV" checked/> HVHV — cross-pol HV</label>
+          <label style="display:block;font-size:.85rem;margin-bottom:4px;cursor:pointer"><input type="checkbox" class="layer-check" value="mask" checked/> mask — máscara de validade</label>
+          <label style="display:block;font-size:.85rem;margin-bottom:4px;cursor:pointer"><input type="checkbox" class="layer-check" value="numberOfLooks"/> numberOfLooks</label>
+          <label style="display:block;font-size:.85rem;cursor:pointer"><input type="checkbox" class="layer-check" value="rtcGammaToSigmaFactor"/> rtcGammaToSigmaFactor</label>
+        </div>
+        <!-- Pasta -->
+        <div style="flex:1;min-width:200px">
+          <div style="font-size:.8rem;color:var(--muted);margin-bottom:8px;font-weight:600">PASTA DE SAÍDA</div>
+          <div class="field">
+            <input id="extract-outdir" type="text" value="geotiff" placeholder="geotiff"/>
+            <span style="font-size:.72rem;color:var(--muted);margin-top:4px">subpasta relativa à pasta de downloads</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions" style="margin-top:0">
+        <button class="btn btn-primary" id="btn-extract" onclick="doExtract()">🗂️ Extrair GeoTIFFs</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('extract-card').style.display='none'">✕ Fechar</button>
+      </div>
+
+      <!-- Log -->
+      <div id="extract-log-wrap" style="display:none;margin-top:18px">
+        <div class="progress-wrap">
+          <div class="progress-label" id="extract-progress-label">Aguardando...</div>
+        </div>
+        <div class="log-box" id="extract-log-box"></div>
+        <div id="extract-files-out" style="margin-top:12px;font-size:.82rem;color:var(--green)"></div>
+      </div>
+    </div>
   </div>
+
 
 </div>
 
@@ -695,14 +745,89 @@ async function loadFiles() {
   container.innerHTML = `<div class="file-list">` +
     r.files.map(f => `
       <div class="file-item">
-        <span class="file-icon">📄</span>
+        <span class="file-icon">📦</span>
         <div>
           <div class="file-name">${f.name}</div>
           <div class="file-meta">${f.date}</div>
         </div>
         <span class="file-size">${f.size_mb} MB</span>
+        ${f.name.endsWith('.h5') ? `
+        <button class="btn btn-ghost" style="margin-left:12px;font-size:.8rem;padding:6px 14px"
+                onclick="openExtract('${f.name}')">
+          🗂️ Extrair camadas
+        </button>` : ''}
       </div>`).join('') +
   `</div>`;
+}
+
+// ── Extract ───────────────────────────────────────────────────
+function openExtract(filename) {
+  document.getElementById('extract-filename').textContent = filename;
+  document.getElementById('extract-card').style.display = 'block';
+  document.getElementById('extract-log-wrap').style.display = 'none';
+  document.getElementById('extract-files-out').innerHTML = '';
+  document.getElementById('extract-log-box').innerHTML = '';
+  document.getElementById('btn-extract').dataset.file = filename;
+  document.getElementById('extract-card').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function doExtract() {
+  const btn = document.getElementById('btn-extract');
+  const file = btn.dataset.file;
+  if (!file) return;
+
+  const frequencies = [...document.querySelectorAll('.freq-check:checked')].map(c => c.value);
+  const layers      = [...document.querySelectorAll('.layer-check:checked')].map(c => c.value);
+  const outSubdir   = document.getElementById('extract-outdir').value || 'geotiff';
+
+  if (!frequencies.length) { toast('Selecione ao menos uma frequência', 'err'); return; }
+  if (!layers.length)      { toast('Selecione ao menos um layer', 'err'); return; }
+
+  btn.disabled = true;
+  document.getElementById('extract-log-wrap').style.display = 'block';
+  document.getElementById('extract-log-box').innerHTML = '';
+  document.getElementById('extract-files-out').innerHTML = '';
+  document.getElementById('extract-progress-label').textContent = 'Iniciando extração...';
+
+  const r = await fetch('/api/extract', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ file, frequencies, layers, out_subdir: outSubdir }),
+  });
+  const data = await r.json();
+  if (data.error) { toast(data.error, 'err'); btn.disabled = false; return; }
+
+  toast('Extração iniciada!');
+
+  // SSE stream
+  const logBox  = document.getElementById('extract-log-box');
+  const label   = document.getElementById('extract-progress-label');
+  const filesOut = document.getElementById('extract-files-out');
+  const es = new EventSource('/api/extract-stream');
+  es.onmessage = e => {
+    const { msg } = JSON.parse(e.data);
+    if (msg === '__PING__') return;
+    if (msg === '__DONE__') {
+      es.close();
+      btn.disabled = false;
+      label.textContent = '✅ Extração concluída!';
+      // busca status final
+      fetch('/api/extract-status').then(r => r.json()).then(s => {
+        if (s.files && s.files.length) {
+          filesOut.innerHTML = `<b>${s.files.length} arquivo(s) gerado(s):</b><br>` +
+            s.files.map(p => `<span style="font-family:monospace;font-size:.73rem">${p}</span>`).join('<br>');
+        }
+      });
+      return;
+    }
+    const cls = msg.includes('✓') ? 'log-ok'
+              : msg.includes('✗') || msg.includes('Erro') ? 'log-err'
+              : msg.includes('📊') || msg.includes('💾') ? 'log-info'
+              : 'log-line';
+    logBox.innerHTML += `<div class="${cls}">${escHtml(msg)}</div>`;
+    logBox.scrollTop  = logBox.scrollHeight;
+    label.textContent = msg.startsWith('  ✓') ? `✅ ${msg.trim()}` : msg.trim().slice(0, 60);
+  };
 }
 
 // ── Init ──────────────────────────────────────────────────────

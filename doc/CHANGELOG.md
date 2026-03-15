@@ -5,6 +5,19 @@ Formato: `[versão] AAAA-MM-DD — Descrição`
 
 ---
 
+## [0.0.9] 2026-03-15
+
+### Adicionado
+- `extract_nisar.py` — módulo de extração de layers HDF5 → GeoTIFF com rasterio:
+  seleção de frequência (A/B), seleção de layers (HHHH, HVHV, mask, numberOfLooks,
+  rtcGammaToSigmaFactor), compressão LZW, georreferenciamento UTM correto
+- Rotas Flask: `POST /api/extract`, `GET /api/extract-stream` (SSE), `GET /api/extract-status`
+- Interface na aba **Arquivos Baixados**: botão "🗂️ Extrair camadas" em cada `.h5`,
+  painel de configuração (frequência + layers + pasta de saída) e log em tempo real
+- `rasterio>=1.3` adicionado em `requirements.txt`
+
+---
+
 ## [0.0.8] 2026-03-15
 
 ### Adicionado

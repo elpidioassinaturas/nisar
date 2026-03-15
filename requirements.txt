@@ -1,3 +1,4 @@
-flask
 asf_search
 pyyaml
+flask
+rasterio>=1.3
