@@ -5,6 +5,14 @@ Formato: `[versão] AAAA-MM-DD — Descrição`
 
 ---
 
+## [0.0.10] 2026-03-15
+
+### Modificado
+- Nomes dos GeoTIFFs gerados: `frequencyA` → `BandL` e `frequencyB` → `BandS`
+  (ex.: `..._BandL_HHHH.tif` em vez de `..._frequencyA_HHHH.tif`)
+
+---
+
 ## [0.0.9] 2026-03-15
 
 ### Adicionado

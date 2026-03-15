@@ -25,6 +25,12 @@ except ImportError:
 # Layers disponíveis por frequência
 AVAILABLE_LAYERS = ["HHHH", "HVHV", "mask", "numberOfLooks", "rtcGammaToSigmaFactor"]
 
+# Mapeamento frequência interna → nome da banda SAR
+_BAND_LABEL = {
+    "frequencyA": "BandL",   # L-band  ~1.25 GHz  24 cm
+    "frequencyB": "BandS",   # S-band  ~3.2  GHz   9 cm
+}
+
 # dtype de saída por layer
 _DTYPES = {
     "HHHH":                 "float32",
@@ -112,7 +118,8 @@ def extract_layers(
             y_origin = y_coords[0] - y_res / 2   # y_res é negativo → y_origin > y_coords[0]
             transform = from_origin(x_origin, y_origin, abs(x_res), abs(y_res))
 
-            log_fn(f"  📡 {freq}: EPSG:{epsg}  resolução={abs(x_res):.0f}m  "
+            band_label = _BAND_LABEL.get(freq, freq)
+            log_fn(f"  📡 {band_label} ({freq}): EPSG:{epsg}  resolução={abs(x_res):.0f}m  "
                    f"dimensão={len(y_coords)}×{len(x_coords)}")
 
             # ── Layers ─────────────────────────────────────────────────
@@ -126,7 +133,7 @@ def extract_layers(
                 dtype  = _DTYPES.get(layer, str(data.dtype))
                 nodata = _NODATA.get(layer, None)
 
-                out_name = f"{prefix}_{freq}_{layer}.tif"
+                out_name = f"{prefix}_{band_label}_{layer}.tif"
                 out_path = out_dir / out_name
 
                 log_fn(f"    💾 Salvando {out_name}...")
